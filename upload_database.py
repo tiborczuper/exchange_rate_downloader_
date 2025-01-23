@@ -1,48 +1,58 @@
 import mysql.connector
-from mysql.connector import Error
 from get_exchange_rates import get_exchange_rate_cl, get_exchange_rate_oexr, crypto_to_usd, timestamp_convert
+from mysql_ import connection
+import mysql.connector
+from mysql.connector import Error
 
-def upload_database(timestamp,data: dict):
+
+def upload_database(timestamp, data: dict):
     try:
-        conn = mysql.connector.connect(
+        # Megpróbálunk csatlakozni
+        connection = mysql.connector.connect(
             host="127.0.0.1",
-            user="root",
-            password="Borkauszkar24",
+            user="root",  # Felhasználó
+            password="password",  # Jelszó
             database="exchange_rates"
         )
 
-        if conn.is_connected():
-            print("Sikeres kapcsolódás!")
-
-            cursor = conn.cursor()
+        # Ha sikerült csatlakozni
+        if connection.is_connected():
+            cursor = connection.cursor()
             data = crypto_to_usd(data)
+
             for k, v in data.items():
                 cursor.execute(f'''
-                        CREATE TABLE IF NOT EXISTS {k} (
-                            timestamp TIMESTAMP,
-                            value DECIMAL(30 ,6)
-                        )
-                        ''')
+                    CREATE TABLE IF NOT EXISTS {k} (
+                        timestamp TIMESTAMP,
+                        value DECIMAL(30, 6)
+                    )
+                ''')
                 cursor.execute(f'''
-                        INSERT INTO {k} (timestamp, value) VALUE (%s, %s)
-                        ''', (timestamp_convert(timestamp), v))
+                    INSERT INTO {k} (timestamp, value) VALUES (%s, %s)
+                ''', (timestamp_convert(timestamp), v))
 
+            connection.commit()
+            return True  # Sikerült a csatlakozás és az adatok feltöltése
 
-            conn.commit()
+        # Ha nem sikerült csatlakozni
+        return False
 
-            print("Adatok sikeresen hozzáadva!")
-
-    except Error as e:
-        print("Hiba történt:", e)
+    except Exception:
+        # Ha bármi hiba történik, ne dobjon ki hibát, csak False-t adjon vissza
+        return False
 
     finally:
-        if conn.is_connected():
+        # Ha van nyitott kapcsolat, zárjuk le
+        if 'connection' in locals() and connection.is_connected():
             cursor.close()
-            conn.close()
-            print("Kapcsolat lezárva.")
+            connection.close()
+
 
 if __name__ == '__main__':
     ts_cl, data_cl = get_exchange_rate_cl()
     ts_oexr, data_oexr = get_exchange_rate_oexr()
-    upload_database(ts_cl, data_cl)
-    upload_database(ts_oexr,data_oexr)
+    ASD = upload_database(ts_cl, data_cl)
+    ASD1 = upload_database(ts_oexr,data_oexr)
+
+    print(ASD)
+    print(ASD1)

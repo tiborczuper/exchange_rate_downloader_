@@ -2,6 +2,7 @@ import requests
 import datetime
 import pytz
 
+
 def get_exchange_rate_cl():
     token = "2d8b744642708f96b4c88fd2b81b1eb3"
     base = "usd"
@@ -11,15 +12,9 @@ def get_exchange_rate_cl():
     r = requests.get(url)
     if r.status_code == 200:
         data = r.json()
-        new = {}
-
-        for k, v in data['quotes'].items():
-            new[f"cl_{k[3:]}".lower()] = v
-        data['quotes'] = new
-
         return int(data['timestamp']), data['quotes']
     else:
-        return None
+        return None, None
 
 def get_exchange_rate_oexr():
     token = "17d5640feebb4309b21a601b4772aff6"
@@ -30,17 +25,19 @@ def get_exchange_rate_oexr():
     r = requests.get(url)
     if r.status_code == 200:
         data = r.json()
-        new = {}
-
-        for k, v in data['rates'].items():
-            new[f"oexr_{k}".lower()] = v
-        data['rates'] = new
 
         return int(data['timestamp']), data['rates']
     else:
-        return r.status_code
+        return None, None
 
-def crypto_to_usd(data: dict):
+def format_exchange_rate(data: dict,name: str) -> dict:
+    new = {}
+    for k, v in data.items():
+        new[f"{name}_{k[-3:]}".lower()] = v
+
+    return new
+
+def crypto_to_usd(data: dict) -> dict:
     url = "https://api.coingecko.com/api/v3/coins/list"
     r = requests.get(url)
     dicts = r.json()
@@ -56,7 +53,7 @@ def crypto_to_usd(data: dict):
             data[k] = 1 / data[k]
     return data
 
-def timestamp_convert(timestamp: int):
+def timestamp_convert(timestamp: int) -> datetime:
     dt_object = datetime.datetime.fromtimestamp(timestamp)
     return dt_object
 
