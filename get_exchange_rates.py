@@ -54,8 +54,8 @@ def crypto_to_usd(data: dict) -> dict:
     return data
 
 def timestamp_convert(timestamp: int) -> datetime:
-    dt_object = datetime.datetime.fromtimestamp(timestamp)
-    return dt_object
+    date_timestamp = datetime.datetime.fromtimestamp(timestamp)
+    return date_timestamp
 
 
 if __name__ == '__main__':

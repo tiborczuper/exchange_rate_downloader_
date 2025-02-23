@@ -1,6 +1,5 @@
 import mysql.connector
 from get_exchange_rates import get_exchange_rate_cl, get_exchange_rate_oexr, crypto_to_usd, timestamp_convert
-from mysql_ import connection
 import mysql.connector
 from mysql.connector import Error
 
